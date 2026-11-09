@@ -2,33 +2,25 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# ==========================================
-# PAGE CONFIGURATION
-# ==========================================
+
 st.set_page_config(
     page_title="Green AI Data Center Telemetry Analytics",
     page_icon="⚡",
     layout="wide"
 )
 
-# ==========================================
-# SIDEBAR: DATASET UPLOADER
-# ==========================================
+
 st.sidebar.header("📁 Dataset Input")
 uploaded_file = st.sidebar.file_uploader("Upload Telemetry CSV File", type=["csv"])
 
-# Main Header
 st.title("⚡ Green AI Data Center Telemetry Portal")
 st.caption("Hyperscale digital twin dashboard for workload monitoring and carbon optimization.")
 
-# Stop execution gracefully if no file is uploaded yet
 if uploaded_file is None:
     st.info("👈 Please upload your `green_ai_datacenter.csv` file using the sidebar to begin analysis.")
     st.stop()
 
-# ==========================================
-# DATA LOADING & CLEANING
-# ==========================================
+
 @st.cache_data
 def load_uploaded_data(file):
     df = pd.read_csv(file)
@@ -38,13 +30,10 @@ def load_uploaded_data(file):
 
 df_raw = load_uploaded_data(uploaded_file)
 
-# ==========================================
-# SIDEBAR: DYNAMIC FILTERS & CONTROLS
-# ==========================================
+
 st.sidebar.divider()
 st.sidebar.header("🔍 Filter Telemetry Data")
 
-# 1. Multiselect: Server Type
 server_types = df_raw["server_type"].dropna().unique().tolist()
 selected_servers = st.sidebar.multiselect(
     "Select Server Architecture:",
@@ -52,7 +41,6 @@ selected_servers = st.sidebar.multiselect(
     default=server_types
 )
 
-# 2. Multiselect: Cooling Type
 cooling_types = df_raw["cooling_type"].dropna().unique().tolist()
 selected_cooling = st.sidebar.multiselect(
     "Select Cooling Technology:",
@@ -60,14 +48,12 @@ selected_cooling = st.sidebar.multiselect(
     default=cooling_types
 )
 
-# 3. Selectbox: Energy Efficiency Class
 efficiency_classes = ["All"] + list(df_raw["energy_efficiency_class"].dropna().unique())
 selected_class = st.sidebar.selectbox(
     "Select Energy Efficiency Class:",
     options=efficiency_classes
 )
 
-# 4. Sliders: CPU Utilization & Power Consumption
 min_cpu = float(df_raw["cpu_utilization"].min())
 max_cpu = float(df_raw["cpu_utilization"].max())
 cpu_range = st.sidebar.slider(
@@ -89,9 +75,7 @@ power_range = st.sidebar.slider(
 st.sidebar.divider()
 st.sidebar.info("💡 **Tip:** Adjust sidebar controls to dynamically update all KPIs, tables, and charts.")
 
-# ==========================================
-# FILTER EXECUTION LOGIC
-# ==========================================
+
 filtered_df = df_raw[
     (df_raw["server_type"].isin(selected_servers)) &
     (df_raw["cooling_type"].isin(selected_cooling)) &
@@ -104,9 +88,7 @@ filtered_df = df_raw[
 if selected_class != "All":
     filtered_df = filtered_df[filtered_df["energy_efficiency_class"] == selected_class]
 
-# ==========================================
-# DASHBOARD BODY & TABS NAVIGATION
-# ==========================================
+
 if filtered_df.empty:
     st.warning("⚠️ No telemetry records match your filter criteria. Please adjust sidebar values.")
 else:
@@ -117,9 +99,7 @@ else:
         "💡 Strategic Insights"
     ])
 
-    # ------------------------------------------
-    # TAB 1: DATASET OVERVIEW
-    # ------------------------------------------
+   
     with tab_overview:
         with st.container():
             st.subheader("📌 Key Performance Indicators (KPIs)")
@@ -158,9 +138,7 @@ else:
                 })
                 st.dataframe(info_df, use_container_width=True)
 
-    # ------------------------------------------
-    # TAB 2: DATA ANALYSIS
-    # ------------------------------------------
+ 
     with tab_analysis:
         with st.container():
             st.subheader("📋 Categorical Aggregations & Group-By Operations")
@@ -194,16 +172,13 @@ else:
             )
             st.dataframe(crosstab_df, use_container_width=True)
 
-    # ------------------------------------------
-    # TAB 3: VISUALIZATIONS
-    # ------------------------------------------
+  
     with tab_viz:
         st.subheader("📈 Interactive Telemetry Plots")
         
         with st.container():
             viz_col1, viz_col2 = st.columns(2)
 
-            # A. BAR CHART
             with viz_col1:
                 st.markdown("##### A. Server Type Distribution (Bar Chart)")
                 fig1, ax1 = plt.subplots(figsize=(6, 4))
@@ -216,7 +191,6 @@ else:
                 plt.xticks(rotation=15)
                 st.pyplot(fig1)
 
-            # B. LINE CHART
             with viz_col2:
                 st.markdown("##### B. Sequential Metric Trends (Line Chart)")
                 fig2, ax2 = plt.subplots(figsize=(6, 4))
@@ -230,7 +204,6 @@ else:
                 ax2.grid(True, linestyle="--", alpha=0.5)
                 st.pyplot(fig2)
 
-        # C. SCATTER PLOT
         with st.container():
             st.markdown("##### C. Workload vs. Power Correlation (Scatter Plot)")
             fig3, ax3 = plt.subplots(figsize=(10, 4))
@@ -258,9 +231,7 @@ else:
             * **Scatter Plot Interpretation**: Shows strong linear correlation between CPU workload and power. Large red markers pinpoint low-efficiency nodes emitting disproportionate carbon.
             """)
 
-    # ------------------------------------------
-    # TAB 4: STRATEGIC INSIGHTS
-    # ------------------------------------------
+   
     with tab_insights:
         st.subheader("💡 Sustainability & Infrastructure Recommendations")
         
